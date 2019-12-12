@@ -1,3 +1,5 @@
+///usr/bin/gcc cyberspace_mac.c && ./a.out;  rm a.out;  return 0
+
 #include <stdio.h>
 #include <stdlib.h>
 #define ATTRIB0LEN 22
@@ -45,20 +47,18 @@ void disp_host(struct host *target,struct host hosts[NUMHOSTS]){
 
 void clear_screen(void)
 {
-	int i = 100;
+	int i = 10; // lowered to avoid missing content
 	while(i--) printf("\n");
 	return;
 }
 
 void enum_options(char *a0[ATTRIB0LEN],char *a1[ATTRIB0LEN],char *a2[ATTRIB0LEN])
 {
-	int i,ii,iii;
-	
-		for(ii = 0;ii < ATTRIB1LEN;ii++){
-			for(iii = 0;iii < ATTRIB2LEN;iii++){
-				printf("%s %s\n",a1[ii],a2[iii]);
-			};
-		};
+    for(int ii = 0;ii < ATTRIB1LEN;ii++){
+        for(int iii = 0;iii < ATTRIB2LEN;iii++){
+            printf("%s %s\n",a1[ii],a2[iii]);
+        };
+    };
 	
 	return;
 };
@@ -75,9 +75,8 @@ int main(int argc, char **argv)
 					"AI Mainframe","Website"};
 	char *upgrades[UPGRADES_LEN] = {"Kill","Memory","Simulation","Humanoid","Passive","Exterminate","Experienced","Lethal","Biologics","Upload","Bio","Radio","Psychology","Animal","Factories","Logic","Chaos","Mainframe","Construction","Financing","Nuclear","Transport","Layered","Autonomous","Collective","Procedures","Cannibalize","Domesticate","Defy","Magick"};
 	struct host hosts[NUMHOSTS];
-	int r,i,ii,stop,hacks;
+	int hacks;
 	hacks = 0;
-	stop = 0;
 	FILE *savegame;
 	srand(time(NULL));   // so-called "random" numbers will be the same every time if this is commented out
 	/*
@@ -87,8 +86,8 @@ int main(int argc, char **argv)
 	*/
 	//enum_options(attrib0s,attrib1s,attrib2s);
 	// Initialize attributes
-	for(i = 0;i < NUMHOSTS;i++){
-		r = rand()%ATTRIB0LEN;
+	for(int i = 0;i < NUMHOSTS;i++){
+		int r = rand()%ATTRIB0LEN;
 		hosts[i].attrib[0] = attrib0s[r];
 		r = rand()%ATTRIB1LEN;
 		hosts[i].attrib[1] = attrib1s[r];
@@ -99,27 +98,32 @@ int main(int argc, char **argv)
 		hosts[i].collectables = rand()%2;	
 	};
 
-	for(i = 0;i < NUMHOSTS;i++){
-		stop = 0;
-		for(ii = 0;(ii < NUMHOSTS) && (stop < 4);ii++){
-			r = rand()%100;
-			if(((hosts[i].attrib[0] == hosts[ii].attrib[0]) &&
-			   (hosts[i].attrib[1] == hosts[ii].attrib[1]))
-			   && (r < 25)
-			   && (i != ii)){
-				hosts[i].links[stop] = ii;
-				stop++;
-		
-			} else if((r < 4) &&
-		           (i != ii) &&
-		          ((hosts[i].attrib[0] == hosts[ii].attrib[0]) ||
-			   (hosts[i].attrib[1] == hosts[ii].attrib[1]))){    // Attribute 3 isn't a point of similarity
-				hosts[i].links[stop] = ii;
-				stop++;
-			};
-			
-		};
-	};
+	for(int i = 0;i < NUMHOSTS;i++){
+		int host_link_count = 0;
+		for(int ii = 0;ii < NUMHOSTS;ii++){
+            if (host_link_count  >= 4) break; // done!
+            if (i == ii) continue;
+			int r = rand()%100;
+            struct host * host_one = &hosts[i];
+            struct host * host_two = &hosts[ii];
+			if( r < 25 && 
+                host_one->attrib[0] == host_two->attrib[0] && 
+                host_one->attrib[1] == host_two->attrib[1]
+			   ){
+                // 24% change it'll be a link if both attributes match
+                host_one->links[host_link_count] = ii;
+				host_link_count++;
+			} 
+            else if(  r < 4 &&  
+                (host_one->attrib[0] == host_two->attrib[0] ||
+                host_one->attrib[1] == host_two->attrib[1])
+			   ){
+                // 3% it'll be linked if one attriubte matches
+                host_one->links[host_link_count] = ii;
+				host_link_count++;
+			} 
+		}
+	}
 /*		
 	for(i = 0;i < NUMHOSTS;i++){
 		disp_host(&hosts[i],hosts);
@@ -136,22 +140,15 @@ int main(int argc, char **argv)
 	while(input != 'q'){
 		clear_screen();
 		sleeph(500);
-		//printf("prev = %d\n",prev_host);
+
 		printf("Host #%d\n",curr_host);
 
-		/* else if(hosts[curr_host].collectables == 2){
-			sleeph(500);
-			printf("HACKED\n");
-			sleeph(500);
-		};*/
 		sleeph(500);
 		
 		disp_host(&hosts[curr_host],hosts);
 		sleeph(500);
-		
-		
+        input = getchar();
 
-		input = getchar();
 		
 		if(input == '0'){
 			prev_host = curr_host;
@@ -175,6 +172,41 @@ int main(int argc, char **argv)
 			if(code < NUMHOSTS) curr_host = code;
 		} else if(input == 'h'){
 			if(hosts[curr_host].collectables == 1){
+				printf("\n\n\n\n\n\n");
+                for (int clock = 0; clock < 100; ++clock) {
+                    for (int dot = 0; dot < clock; ++dot) {
+                        int rand_position = rand() %40;
+                        printf("\r"); // all left
+                        printf("\033[%dA", rand_position); // up
+                        printf("\033[%dC", rand() %220); // right
+                        printf("%c", 48+ rand() % 2);
+                        printf("\033[%dB", rand_position);
+                        printf("\r"); // all left
+                    }
+                    printf("\33[A");
+                }
+				printf("hacking. (hold enter)");
+                    printf("\33[A");
+                for (int clock = 0; clock < 100; ++clock) {
+                    for (int dot = 0; dot < clock; ++dot) {
+                        int rand_position = rand() %40;
+                        printf("\r"); // all left
+                        printf("\033[%dA", rand_position); // up
+                        printf("\033[%dC", rand() %220); // right
+                        printf("%c", 33 + rand() % 44);
+                        printf("\033[%dB", rand_position);
+                        printf("\r"); // all left
+                    }
+                    getchar();
+                    printf("\33[A");
+                }
+
+                printf("Success\n");
+                printf("press c to continue");
+                while(input != 'c') {
+                    input = getchar();
+                    printf("\33[%dA", 1); // up
+                }
 		
 				hacks += hosts[curr_host].collectables;
 				hosts[curr_host].collectables = 2;
@@ -184,7 +216,11 @@ int main(int argc, char **argv)
 				sleeph(1000);
 				//printf("upgrade: %s\n",upgrades[rand()%UPGRADES_LEN]);
 				//sleeph(2000);
-			};
+			}
+            else {
+				printf("Nothing found.");
+            }
+                
 		} else if(input == 'l'){
 			int i;
 			clear_screen();
