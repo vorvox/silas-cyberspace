@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define ATTRIB0LEN 22
 #define ATTRIB1LEN 15
 #define ATTRIB2LEN 6
@@ -12,6 +13,46 @@ struct host{
 	int links[4];
 	int collectables;
 };
+
+char **split(char *string, int *numTokens)
+{
+	char *currToken = "";
+	int i;
+	static char *tokens[100] = {NULL};
+	i = 0;
+	currToken = strtok(string,"  ");
+	while(currToken != NULL){
+		tokens[i] = currToken;
+		currToken = strtok(NULL,"  ");
+		i++;
+	};
+	*numTokens = i;
+	return tokens;
+}
+
+int strEq(char* a, char* b)
+{
+    return (strcmp(a, b)==0) ? 1 : 0;
+}
+
+void test_token_input(void)
+{
+	char input[100] = "";
+	fgets(input,sizeof(input),stdin);
+	input[strlen(input) - 1] = 0; // remove the '\n' at the end
+	int numtokens = 0;
+	char **tokens;
+	tokens = split(input,&numtokens);
+
+	if(strEq(tokens[0],"command")){
+		if(strEq(tokens[1],"blah")){
+			printf("COMMAND BLAH EXECUTED\n");
+		} else {
+			printf("WHICH COMMAND??\n");
+		};
+	};
+	return;
+}
 
 void sleeph(unsigned int mseconds)
 {
