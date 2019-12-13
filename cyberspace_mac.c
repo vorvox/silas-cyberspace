@@ -45,7 +45,7 @@ void test_token_input(void)
 	tokens = split(input,&numtokens);
 
 	if(strEq(tokens[0],"command")){
-		if(strEq(tokens[1],"blah")){
+		if((numtokens > 1) && strEq(tokens[1],"blah")){
 			printf("COMMAND BLAH EXECUTED\n");
 		} else {
 			printf("WHICH COMMAND??\n");
